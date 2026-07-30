@@ -5,6 +5,7 @@ This is the clean starter for an end-to-end invoice and receipt review applicati
 > You are on `main`, the learner starter. Active work is visible on `development`; the reviewed finished application is on `solution`.
 
 Tutorial: <https://learn.datalumina.com/docs/invoice-review>
+Live Demo: <https://ca-invoice-review.ambitiousgrass-0fe56c4f.northeurope.azurecontainerapps.io/>
 
 ## Architecture
 
@@ -112,3 +113,9 @@ git switch solution
 ```
 
 Start with [the client brief](docs/client-brief.md), then follow the [complete tutorial](https://learn.datalumina.com/docs/invoice-review).
+
+## Deployment
+
+The app is deployed to Azure Container Apps as a single container. See
+[docs/deployment.md](docs/deployment.md) for the architecture, the resources it runs on, the
+password gate, what does and doesn't survive a restart, and how to ship a new version.

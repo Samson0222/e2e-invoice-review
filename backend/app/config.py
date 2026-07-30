@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     azure_openai_endpoint: str
     azure_openai_api_key: str
 
+    app_password: str | None = None
+
 
 settings = Settings()
 

@@ -1,15 +1,22 @@
 """FastAPI application factory: wiring, CORS, and the health check."""
 
-from fastapi import FastAPI
+from pathlib import Path
+
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.accounting.routes import router as accounting_router
+from app.auth.dependencies import require_auth
+from app.auth.routes import router as auth_router
 from app.config import APP_CONFIG, settings
 from app.database import build_database
 from app.invoices.models import Base
 from app.invoices.routes import router as invoices_router
 from app.pipeline import build_default_pipeline
 from app.providers.azure_openai_correction_email import CorrectionEmailDrafter
+
+_STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 
 def create_app() -> FastAPI:
@@ -33,11 +40,15 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    app.include_router(invoices_router)
-    app.include_router(accounting_router)
+    app.include_router(auth_router)
+    app.include_router(invoices_router, dependencies=[Depends(require_auth)])
+    app.include_router(accounting_router, dependencies=[Depends(require_auth)])
 
     @app.get("/health")
     def health() -> dict[str, str]:
         return {"status": "ok"}
+
+    if _STATIC_DIR.exists():
+        app.mount("/", StaticFiles(directory=_STATIC_DIR, html=True), name="frontend")
 
     return app

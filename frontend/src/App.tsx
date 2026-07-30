@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { DocumentInbox } from './components/DocumentInbox'
 import { DocumentReview } from './components/DocumentReview'
+import { LoginGate } from './components/LoginGate'
 import { ProcessingStep } from './components/ProcessingStep'
 import { UploadStep } from './components/UploadStep'
 import { WelcomePortal } from './components/WelcomePortal'
 import { Button } from './components/ui/Button'
-import { deleteDocument, listDocuments, listGlAccounts, uploadDocument } from './lib/api'
+import { deleteDocument, getAuthStatus, listDocuments, listGlAccounts, uploadDocument } from './lib/api'
 import type { Document, GlAccount } from './lib/types'
 
 type View = 'welcome' | 'upload' | 'processing' | 'review' | 'history'
@@ -51,6 +52,7 @@ function AppHeader({
 }
 
 function App() {
+  const [authenticated, setAuthenticated] = useState<boolean | null>(null)
   const [view, setView] = useState<View>('welcome')
   const [file, setFile] = useState<File | null>(null)
   const [selected, setSelected] = useState<Document | null>(null)
@@ -70,6 +72,13 @@ function App() {
   }
 
   useEffect(() => {
+    getAuthStatus()
+      .then((status) => setAuthenticated(!status.required || status.authenticated))
+      .catch(() => setAuthenticated(false))
+  }, [])
+
+  useEffect(() => {
+    if (!authenticated) return
     listGlAccounts()
       .then((accounts) => {
         setGlAccounts(accounts)
@@ -78,7 +87,7 @@ function App() {
       .catch((reason: unknown) => {
         setGlAccountsError(reason instanceof Error ? reason.message : 'Could not load GL accounts.')
       })
-  }, [])
+  }, [authenticated])
 
   function startReview() {
     setFile(null)
@@ -128,6 +137,14 @@ function App() {
   }
 
   const showHeader = view !== 'welcome'
+
+  if (authenticated === null) {
+    return <div className="min-h-screen bg-zinc-50" />
+  }
+
+  if (!authenticated) {
+    return <LoginGate onAuthenticated={() => setAuthenticated(true)} />
+  }
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-950">

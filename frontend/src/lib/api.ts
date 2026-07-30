@@ -7,7 +7,7 @@ import type {
 } from './types'
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`, init)
+  const response = await fetch(`${apiBaseUrl}${path}`, { credentials: 'include', ...init })
   if (!response.ok) {
     let message = `Request failed (${response.status})`
     try {
@@ -89,4 +89,21 @@ export function draftCorrectionEmail(id: string): Promise<CorrectionEmailDraft> 
 
 export function listGlAccounts(): Promise<GlAccount[]> {
   return request<GlAccount[]>('/api/accounting/gl-accounts')
+}
+
+export interface AuthStatus {
+  required: boolean
+  authenticated: boolean
+}
+
+export function getAuthStatus(): Promise<AuthStatus> {
+  return request<AuthStatus>('/api/auth/status')
+}
+
+export function login(password: string): Promise<AuthStatus> {
+  return request<AuthStatus>('/api/auth/login', json('POST', { password }))
+}
+
+export function logout(): Promise<void> {
+  return request<void>('/api/auth/logout', { method: 'POST' })
 }
