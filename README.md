@@ -36,21 +36,21 @@ The backend processes documents through a sequential four-step pipeline before a
 
 ```mermaid
 flowchart TD
-    Upload[POST /api/documents<br/>routes.py] --> Service[DocumentService.process()<br/>invoices/service.py]
-    Service --> Raw[RawDocument]
+    Upload["POST /api/documents<br/>routes.py"] --> Service["DocumentService.process()<br/>invoices/service.py"]
+    Service --> Raw["RawDocument"]
     
-    subgraph pipeline [app/pipeline/]
+    subgraph pipeline ["app/pipeline/"]
         direction TD
-        Raw --> Review[ReviewStep<br/>pipeline/review.py]
-        Review --> Extract[ExtractStep<br/>pipeline/extraction.py]
-        Extract --> Merge[MergeStep<br/>pipeline/merge.py]
-        Merge --> GL[ClassifyGLStep<br/>pipeline/gl_classification.py]
-        GL --> Result[PipelineResult]
+        Raw --> Review["ReviewStep<br/>pipeline/review.py"]
+        Review --> Extract["ExtractStep<br/>pipeline/extraction.py"]
+        Extract --> Merge["MergeStep<br/>pipeline/merge.py"]
+        Merge --> GL["ClassifyGLStep<br/>pipeline/gl_classification.py"]
+        GL --> Result["PipelineResult"]
     end
     
-    Result --> Validation[validate_invoice() / validate_receipt()<br/>invoices/validation.py]
-    Validation --> Repo[DocumentRepository<br/>invoices/repository.py]
-    Repo --> DB[(SQLite DB)]
+    Result --> Validation["validate_invoice() / validate_receipt()<br/>invoices/validation.py"]
+    Validation --> Repo["DocumentRepository<br/>invoices/repository.py"]
+    Repo --> DB[("SQLite DB")]
 ```
 
 1. **`ReviewStep`** (`pipeline/review.py`): Performs an initial independent classification (identifying if the document is an invoice or a receipt) and extracts a standalone set of fields directly from the page via `AzureOpenAIReviewProvider`. This prevents a redundant second LLM pass later.
